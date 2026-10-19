@@ -232,45 +232,80 @@ function useWorkspace(threadId: string) {
 }
 
 // ---------------------------------------------------------------------------
-// Layout: our own row under the pane header, and a pane body for drafts
+// Layout: the tabs share the pane header's row, and drafts get a pane body
 
-/**
- * A row of our own directly under the pane's header, like Paseo's tab bar.
- * The header slot is a 256px box in a 48px row, too small for tabs, so the
- * slot component only anchors us: we find its <header>, insert a sibling
- * after it, and portal the tabs there. Null when BB's layout has changed and
- * the header can't be found; the caller then renders inline.
- */
-function useTabRow(anchor: RefObject<HTMLElement | null>) {
-  const [row, setRow] = useState<HTMLElement | null>(null);
-  useLayoutEffect(() => {
-    const header = anchor.current?.closest("header");
-    if (!header?.parentElement) return;
-    const node = document.createElement("div");
-    node.className = "bbw-row";
-    header.after(node);
-    setRow(node);
-    return () => {
-      node.remove();
-      setRow(null);
-    };
-  }, [anchor]);
-  return row;
+const TITLE_HIDDEN_ATTRIBUTE = "data-bbw-hidden";
+
+interface HeaderSlots {
+  /** Where the tab strip and + go. */
+  bar: HTMLElement;
+  /** Where the workspace name goes, in place of the thread title; null in row mode. */
+  name: HTMLElement | null;
+  /** The node the draft pane is inserted after: the header, or our own row. */
+  paneAfter: HTMLElement;
+  /** The pane's <header>. */
+  header: HTMLElement;
 }
 
 /**
- * The pane body of the "New agent" tab: another node of our own in the pane
- * column, below the tab row. While it exists, CSS hides the thread's chat
- * without unmounting it, so switching back loses nothing.
+ * Put the workspace into the pane header's own row. The header slot is a
+ * 256px box among the right-hand actions, too small for tabs, so the slot
+ * component only anchors us. We find the header's title group, hide the
+ * thread title (the active tab shows it), put the workspace name in its
+ * place, and the tabs after the thread's ⋯ menu. If BB's header no longer has
+ * that shape, fall back to a row of our own under the header.
  */
-function useDraftPane(row: HTMLElement | null, open: boolean) {
+function useHeaderSlots(anchor: RefObject<HTMLElement | null>) {
+  const [slots, setSlots] = useState<HeaderSlots | null>(null);
+  useLayoutEffect(() => {
+    const header = anchor.current?.closest("header");
+    if (!header?.parentElement) return;
+    const left = header.querySelector('[data-testid="app-page-header-content-row"]')?.firstElementChild;
+    const titleGroup = left?.firstElementChild;
+    const title = titleGroup?.firstElementChild;
+
+    if (left instanceof HTMLElement && titleGroup instanceof HTMLElement && title instanceof HTMLElement) {
+      const name = document.createElement("div");
+      name.className = "bbw-name-slot";
+      const bar = document.createElement("div");
+      bar.className = "bbw-header-bar";
+      titleGroup.prepend(name);
+      titleGroup.after(bar);
+      title.setAttribute(TITLE_HIDDEN_ATTRIBUTE, "true");
+      setSlots({ bar, name, paneAfter: header, header });
+      return () => {
+        name.remove();
+        bar.remove();
+        title.removeAttribute(TITLE_HIDDEN_ATTRIBUTE);
+        setSlots(null);
+      };
+    }
+
+    const row = document.createElement("div");
+    row.className = "bbw-row";
+    header.after(row);
+    setSlots({ bar: row, name: null, paneAfter: row, header });
+    return () => {
+      row.remove();
+      setSlots(null);
+    };
+  }, [anchor]);
+  return slots;
+}
+
+/**
+ * The pane body of the "New agent" tab: a node of our own in the pane column,
+ * below the header. While it exists, CSS hides the thread's chat without
+ * unmounting it, so switching back loses nothing.
+ */
+function useDraftPane(after: HTMLElement | null, open: boolean) {
   const [pane, setPane] = useState<HTMLElement | null>(null);
   useLayoutEffect(() => {
-    const column = row?.parentElement;
-    if (!open || !row || !column) return;
+    const column = after?.parentElement;
+    if (!open || !after || !column) return;
     const node = document.createElement("div");
     node.className = "bbw-draft";
-    row.after(node);
+    after.after(node);
     column.setAttribute(DRAFT_ATTRIBUTE, "true");
     setPane(node);
     return () => {
@@ -278,18 +313,17 @@ function useDraftPane(row: HTMLElement | null, open: boolean) {
       column.removeAttribute(DRAFT_ATTRIBUTE);
       setPane(null);
     };
-  }, [row, open]);
+  }, [after, open]);
   return pane;
 }
 
 function WorkspaceHeader(props: PluginThreadHeaderActionProps) {
   const anchor = useRef<HTMLSpanElement>(null);
-  const row = useTabRow(anchor);
-  const tabs = <WorkspaceTabRow {...props} row={row} />;
+  const slots = useHeaderSlots(anchor);
   return (
     <>
       <span ref={anchor} className="bbw-anchor" />
-      {row ? createPortal(tabs, row) : <div className="bbw-inline">{tabs}</div>}
+      <WorkspaceTabRow {...props} slots={slots} />
     </>
   );
 }
@@ -300,8 +334,8 @@ function WorkspaceHeader(props: PluginThreadHeaderActionProps) {
 function WorkspaceTabRow({
   threadId,
   projectId,
-  row,
-}: PluginThreadHeaderActionProps & { row: HTMLElement | null }) {
+  slots,
+}: PluginThreadHeaderActionProps & { slots: HeaderSlots | null }) {
   const { workspaceId, tabs, current, name, isExplicit, draftOpen } = useWorkspace(threadId);
   const { values } = useSettings();
   const profiles = useMemo(() => parseTerminalProfiles(values?.terminalProfiles), [values]);
@@ -313,17 +347,21 @@ function WorkspaceTabRow({
   const [dragging, setDragging] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const showDraft = draftActive && draftOpen;
-  const draftPane = useDraftPane(row, showDraft);
+  const draftPane = useDraftPane(slots?.paneAfter ?? null, showDraft);
   const environmentId = current?.environment?.id ?? null;
   const tabIds = tabs.map((thread) => thread.id);
+  const openThreadTab = (id: string) => {
+    if (id === threadId) setDraftActive(false);
+    else navigate.toThread(id);
+  };
 
   useEffect(() => setDraftActive(false), [threadId]);
 
   const startAgent = () => {
     setMenu("closed");
     if (!environmentId || !workspaceId) return;
-    // Without our row there is nowhere to draw the tab; use BB's compose page.
-    if (!row) {
+    // Without our slots there is nowhere to draw the tab; use BB's compose page.
+    if (!slots) {
       navigate.toCompose({ projectId, environmentId, focusPrompt: true });
       return;
     }
@@ -392,15 +430,14 @@ function WorkspaceTabRow({
       const action = detail.action;
       if (action.startsWith("tab-")) {
         const target = tabIds[Number(action.slice(4)) - 1];
-        if (target === threadId) setDraftActive(false);
-        else if (target) navigate.toThread(target);
+        if (target) openThreadTab(target);
         return;
       }
       switch (action) {
         case "next":
         case "previous": {
           const target = adjacentTab(tabIds, threadId, action === "next" ? 1 : -1);
-          if (target) navigate.toThread(target);
+          if (target) openThreadTab(target);
           break;
         }
         case "new-agent":
@@ -433,13 +470,19 @@ function WorkspaceTabRow({
     setDropIndex(event.clientX > rect.left + rect.width / 2 ? index + 1 : index);
   };
 
-  return (
+  const workspaceName = (
+    <WorkspaceName
+      name={name}
+      fallback={tabs[0]?.displayTitle ?? current.displayTitle}
+      onRename={renameWorkspace}
+    />
+  );
+  // One tab is just the workspace; the name already says which thread it is.
+  const showTabs = tabs.length > 1 || draftOpen;
+
+  const bar = (
     <div className="bbw-bar">
-      <WorkspaceName
-        name={name}
-        fallback={tabs[0]?.displayTitle ?? current.displayTitle}
-        onRename={renameWorkspace}
-      />
+      {slots?.name ? createPortal(workspaceName, slots.name) : workspaceName}
       <div
         className="bbw-strip"
         role="tablist"
@@ -448,7 +491,7 @@ function WorkspaceTabRow({
           if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDropIndex(null);
         }}
       >
-        {tabs.map((thread, index) => (
+        {showTabs && tabs.map((thread, index) => (
           <AgentTab
             key={thread.id}
             thread={thread}
@@ -456,9 +499,7 @@ function WorkspaceTabRow({
             closable={tabs.length > 1}
             dropBefore={dragging !== null && dropIndex === index}
             dropAfter={dragging !== null && dropIndex === tabs.length && index === tabs.length - 1}
-            onSelect={() =>
-              thread.id === threadId ? setDraftActive(false) : navigate.toThread(thread.id)
-            }
+            onSelect={() => openThreadTab(thread.id)}
             onClose={() => void closeTab(thread)}
             onDragStart={() => setDragging(thread.id)}
             onDragOver={(event) => dropAt(event, index)}
@@ -542,6 +583,9 @@ function WorkspaceTabRow({
         )}
     </div>
   );
+
+  const target = slots?.bar ?? null;
+  return target ? createPortal(bar, target) : <div className="bbw-inline">{bar}</div>;
 }
 
 function WorkspaceName({
@@ -590,14 +634,13 @@ function WorkspaceName({
       type="button"
       className="bbw-name"
       data-unnamed={name === null}
-      title="Rename workspace"
-      onClick={() => {
+      title="Double-click to rename"
+      onDoubleClick={() => {
         setValue(name ?? "");
         setEditing(true);
       }}
     >
       <span className="bbw-title">{name ?? fallback}</span>
-      <Icon name="Edit" className="bbw-icon bbw-name-edit" aria-hidden />
     </button>
   );
 }

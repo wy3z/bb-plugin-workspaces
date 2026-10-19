@@ -1,6 +1,6 @@
 {
   "name": "bb-plugin-workspaces",
-  "version": "0.4.0",
+  "version": "0.5.2",
   "description": "Paseo-style workspaces for BB: every thread is a workspace, and agents in it are tabs.",
   "author": {
     "name": "WYEZ",

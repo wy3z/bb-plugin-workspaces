@@ -1,10 +1,11 @@
 # Workspaces
 
 Paseo-style workspaces for BB. Every thread is a workspace, and the agents in
-it show as tabs in a row under the thread header. Click a tab to switch, drag
-to reorder, and close one with **×** (that archives the thread).
+it show as tabs in the thread header. Click a tab to switch, drag to reorder,
+and close one with **×** (that archives the thread).
 
-The workspace name sits at the start of the row. Click it to rename.
+The workspace name takes the place of the thread title. Double-click it to rename. A
+workspace with one thread shows just its name and **+**.
 
 ## The + menu
 
@@ -54,8 +55,9 @@ Right-click a tab for BB's usual thread menu. Middle-click closes it.
 
 ## Limits
 
-- BB has no slot under the thread header. The plugin inserts its own row there,
-  so a change to BB's header layout drops the tabs back into the header.
+- BB has no slot for tabs in the thread header. The plugin places them in the
+  header's title area itself. If a BB update changes that layout, the tabs fall
+  back to a row of their own under the header.
 - Terminals and browsers open in BB's side panel, not as tabs.
 - Each tab is its own thread, so switching tabs changes the page.
 

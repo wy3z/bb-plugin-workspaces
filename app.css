@@ -8,7 +8,42 @@
   overflow: hidden;
 }
 
-/* Our own row under the pane header, like Paseo's tab bar. */
+/* Header mode: the workspace shares the pane header's row. */
+/* BB's "Close pane" button; tabs close threads, so the header drops it. */
+header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"]) {
+  display: none;
+}
+
+[data-bbw-hidden="true"] {
+  display: none !important;
+}
+
+.bbw-name-slot {
+  display: flex;
+  min-width: 0;
+}
+
+.bbw-name-slot .bbw-name {
+  max-width: 260px;
+  padding: 0 2px;
+  border-right: 0;
+  color: inherit;
+  font-size: 14px;
+}
+
+.bbw-header-bar {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  margin-left: 8px;
+}
+
+.bbw-header-bar .bbw-bar {
+  flex: 1;
+}
+
+/* Fallback: our own row under the pane header, like Paseo's tab bar. */
 .bbw-row {
   position: relative;
   flex: none;
@@ -41,21 +76,12 @@
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
-  cursor: text;
+  cursor: default;
 }
 
 .bbw-name[data-unnamed="true"] {
   color: var(--muted-foreground);
   font-weight: 400;
-}
-
-.bbw-name-edit {
-  opacity: 0;
-  color: var(--muted-foreground);
-}
-
-.bbw-name:hover .bbw-name-edit {
-  opacity: 1;
 }
 
 .bbw-name input {
@@ -140,7 +166,7 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: calc(var(--radius) - 2px);
   background: transparent;
   color: var(--muted-foreground);

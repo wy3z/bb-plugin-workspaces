@@ -1,0 +1,306 @@
+/* Header slot: only an anchor once the row is in place. */
+.bbw-anchor {
+  display: none;
+}
+
+.bbw-inline {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Our own row under the pane header, like Paseo's tab bar. */
+.bbw-row {
+  position: relative;
+  flex: none;
+  min-width: 0;
+  padding: 6px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.bbw-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bbw-name {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 220px;
+  height: 28px;
+  padding: 0 8px 0 2px;
+  border: 0;
+  border-right: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: text;
+}
+
+.bbw-name[data-unnamed="true"] {
+  color: var(--muted-foreground);
+  font-weight: 400;
+}
+
+.bbw-name-edit {
+  opacity: 0;
+  color: var(--muted-foreground);
+}
+
+.bbw-name:hover .bbw-name-edit {
+  opacity: 1;
+}
+
+.bbw-name input {
+  width: 180px;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--ring);
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  outline: none;
+}
+
+.bbw-strip {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.bbw-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.bbw-icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.bbw-tab {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 220px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.bbw-tab:hover {
+  background: var(--state-hover);
+  color: var(--foreground);
+}
+
+.bbw-tab[data-drop-before] {
+  box-shadow: inset 2px 0 0 var(--ring);
+}
+
+.bbw-tab[data-drop-after] {
+  box-shadow: inset -2px 0 0 var(--ring);
+}
+
+.bbw-tab[data-active="true"] {
+  border-color: var(--border);
+  background: var(--state-active);
+  color: var(--foreground);
+}
+
+.bbw-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bbw-add {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.bbw-add:hover,
+.bbw-add[aria-expanded="true"] {
+  background: var(--state-hover);
+  color: var(--foreground);
+}
+
+.bbw-menu {
+  position: fixed;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  width: 248px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.3);
+  font-size: 13px;
+}
+
+.bbw-item,
+.bbw-url {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: calc(var(--radius) - 4px);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bbw-item:hover:not(:disabled),
+.bbw-item:focus-visible {
+  background: var(--state-hover);
+  outline: none;
+}
+
+.bbw-item:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.bbw-item-label {
+  flex: 1;
+}
+
+.bbw-hint {
+  color: var(--muted-foreground);
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.bbw-url input {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  outline: none;
+}
+
+.bbw-url input:focus {
+  border-color: var(--ring);
+}
+
+.bbw-sep {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--border);
+}
+
+.bbw-group,
+.bbw-foot {
+  padding: 4px 8px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+
+/* A "New agent" tab: hide the thread's chat (still mounted) and show ours. */
+[data-bbw-draft="true"] > :not(header):not(.bbw-row):not(.bbw-draft) {
+  display: none !important;
+}
+
+.bbw-draft {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 24px;
+  overflow: auto;
+}
+
+.bbw-draft-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(760px, 100%);
+}
+
+.bbw-draft-title {
+  color: var(--foreground);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.bbw-draft-note {
+  margin-bottom: 8px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+.bbw-tab-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.bbw-tab:not(:hover):not([data-active="true"]) .bbw-tab-close {
+  visibility: hidden;
+}
+
+.bbw-tab-close .bbw-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.bbw-tab-close:hover {
+  background: var(--state-hover);
+  color: var(--foreground);
+}
+
+.bbw-error {
+  margin: 0;
+  color: var(--destructive, #f85149);
+  font-size: 12px;
+}

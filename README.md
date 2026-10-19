@@ -1,0 +1,78 @@
+# Workspaces
+
+Paseo-style workspaces for BB. Every thread is a workspace, and the agents in
+it show as tabs in a row under the thread header. Click a tab to switch, drag
+to reorder, and close one with **×** (that archives the thread).
+
+The workspace name sits at the start of the row. Click it to rename.
+
+## The + menu
+
+| Item | What it does |
+| --- | --- |
+| **Agent** | Opens a **New agent** tab with BB's composer, set to this workspace's directory. Sending it turns the tab into a real thread in the workspace. An unsent draft stays as a tab until you close it. |
+| **Terminal** | Opens a shell in BB's terminal panel. |
+| **Browser** | Asks for a URL and opens it in BB's browser. |
+| **Terminal profiles** | Opens a terminal running a command, such as `claude` or `codex`. |
+
+Edit the profiles under **Settings → Plugins → Workspaces**, one per line as
+`Name=command`.
+
+## What counts as one workspace
+
+A thread joins a workspace by the first rule that applies:
+
+1. It was added with **+ → Agent**, or moved with a command. This is stored in
+   the plugin's thread metadata, key `workspaceId`.
+2. It is a top-level thread sharing a worktree with others.
+3. Otherwise it is a workspace of one.
+
+Delegated and forked threads stay out of the tabs, because the sidebar already
+nests them under their parent. Project checkouts are not grouped by
+environment, because one checkout can hold hundreds of unrelated threads.
+
+Other plugins can read membership with
+`threads.getPluginMetadata({ threadId, pluginId: "workspaces" })`. The keys
+are `workspaceId`, `workspaceName` and `tabOrder`. After it writes them, the
+plugin fires a `bb-workspaces:changed` event on `window`.
+[Cursor Sidebar](https://github.com/wy3z/bb-plugin-cursor-sidebar) uses this
+to nest a workspace's threads under its first thread.
+
+## Commands
+
+| Command | Default shortcut |
+| --- | --- |
+| Workspace: add an agent | Mod+Shift+A |
+| Workspace: open a terminal | Mod+Alt+T |
+| Workspace: open a browser | Mod+Shift+B |
+| Workspace: next tab / previous tab | Mod+Alt+] / Mod+Alt+[ |
+| Workspace: jump to tab 1–9 | Mod+Alt+1 … Mod+Alt+9 |
+| Workspace: move this thread to its own workspace | none |
+| Workspace: reset this thread's workspace | none |
+
+Right-click a tab for BB's usual thread menu. Middle-click closes it.
+
+## Limits
+
+- BB has no slot under the thread header. The plugin inserts its own row there,
+  so a change to BB's header layout drops the tabs back into the header.
+- Terminals and browsers open in BB's side panel, not as tabs.
+- Each tab is its own thread, so switching tabs changes the page.
+
+## Installation
+
+```sh
+bb plugin install git:https://github.com/wy3z/bb-plugin-workspaces.git
+```
+
+## Development
+
+```sh
+npm install
+npm run check
+bb plugin install . --yes
+```
+
+## License
+
+[MIT](LICENSE)

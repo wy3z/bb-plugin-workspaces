@@ -262,8 +262,27 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
 }
 
 /* A "New agent" tab: hide the thread's chat (still mounted) and show ours. */
-[data-bbw-draft="true"] > :not(header):not(.bbw-row):not(.bbw-draft) {
+[data-bbw-draft="true"]
+  > :not(header):not(.bbw-row):not(.bbw-draft):not([data-thread-main-pane-strip]) {
   display: none !important;
+}
+
+/* BB main-pane builds: the agent tabs share BB's tab row under the header. */
+.bbw-main-tabs {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+}
+
+.bbw-main-tabs .bbw-strip {
+  flex: 0 1 auto;
+}
+
+
+.bbw-header-actions {
+  display: flex;
+  align-items: center;
 }
 
 .bbw-draft {

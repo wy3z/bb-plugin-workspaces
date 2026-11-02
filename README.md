@@ -13,7 +13,7 @@ workspace with one thread shows just its name and **+**.
 | --- | --- |
 | **Agent** | Opens a **New agent** tab with BB's composer, set to this workspace's directory. Sending it turns the tab into a real thread in the workspace. An unsent draft stays as a tab until you close it. |
 | **Terminal** | Opens a shell in BB's terminal panel. |
-| **Browser** | Asks for a URL and opens it in BB's browser. |
+| **Browser** | Asks for a URL and opens it in BB's browser, in the thread's main pane where the build supports it. |
 | **Terminal profiles** | Opens a terminal running a command, such as `claude` or `codex`. |
 
 Edit the profiles under **Settings → Plugins → Workspaces**, one per line as
@@ -53,12 +53,21 @@ to nest a workspace's threads under its first thread.
 
 Right-click a tab for BB's usual thread menu. Middle-click closes it.
 
+## BB builds with a main pane
+
+BB builds with a thread main pane (`wy3z/bb` `feat/main-pane-tabs`) draw a tab
+row under the header once a panel tab has moved beside the chat. The agent tabs
+join that row in place of its **Chat** pill, and **+** moves to the header.
+Clicking the current agent's tab brings the chat back from a moved panel tab.
+On stock BB, or before any tab has moved, the tabs stay in the header.
+
 ## Limits
 
 - BB has no slot for tabs in the thread header. The plugin places them in the
   header's title area itself. If a BB update changes that layout, the tabs fall
   back to a row of their own under the header.
-- Terminals and browsers open in BB's side panel, not as tabs.
+- Terminals open in BB's side panel, not as tabs. Browsers do too on builds
+  without a main pane.
 - Each tab is its own thread, so switching tabs changes the page.
 
 ## Installation

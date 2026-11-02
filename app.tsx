@@ -317,6 +317,77 @@ function useDraftPane(after: HTMLElement | null, open: boolean) {
   return pane;
 }
 
+/**
+ * BB builds with a thread main pane (wy3z/bb feat/main-pane-tabs) draw a tab
+ * strip under the header: "Chat" plus panel tabs moved beside the chat. The
+ * agent tabs join that row instead of a second one, in place of its Chat
+ * pill. BB draws the row only once a panel tab has moved; until then, and on
+ * stock BB, this returns null and the tabs stay in the header row.
+ */
+interface MainStripSlot {
+  /** Where the agent tabs go. */
+  container: HTMLElement;
+  /** The slot under the header; the New agent pane goes after it. */
+  stripHost: HTMLElement;
+  /** BB's Chat pill, hidden while the agent tabs stand in for it. */
+  chatButton: HTMLButtonElement;
+  /** Whether the chat (not a moved panel tab) is showing. */
+  chatActive: boolean;
+}
+
+const MAIN_STRIP_SELECTOR = "[data-thread-main-pane-strip]";
+const MAIN_TABS_SELECTOR = "[data-thread-main-pane-tabs]";
+
+function useMainStripSlot(header: HTMLElement | null) {
+  const [slot, setSlot] = useState<MainStripSlot | null>(null);
+  useLayoutEffect(() => {
+    const stripHost = header?.parentElement?.querySelector<HTMLElement>(MAIN_STRIP_SELECTOR);
+    if (!stripHost) return;
+    const container = document.createElement("div");
+    container.className = "bbw-main-tabs";
+    let hiddenChat: Element | null = null;
+
+    const place = () => {
+      const toolbar = stripHost.querySelector<HTMLElement>(`:scope > ${MAIN_TABS_SELECTOR}`);
+      if (toolbar && container.parentElement !== toolbar) toolbar.prepend(container);
+      const chat = toolbar ? container.nextElementSibling : null;
+      if (chat !== hiddenChat) {
+        hiddenChat?.removeAttribute(TITLE_HIDDEN_ATTRIBUTE);
+        hiddenChat = chat;
+        hiddenChat?.setAttribute(TITLE_HIDDEN_ATTRIBUTE, "true");
+      }
+      const chatButton = chat?.querySelector("button") ?? null;
+      if (!chatButton) {
+        container.remove();
+        setSlot(null);
+        return;
+      }
+      const chatActive = chatButton.getAttribute("aria-pressed") === "true";
+      setSlot((current) =>
+        current?.chatButton === chatButton && current.chatActive === chatActive
+          ? current
+          : { container, stripHost, chatButton, chatActive },
+      );
+    };
+
+    const observer = new MutationObserver(place);
+    observer.observe(stripHost, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["aria-pressed"],
+    });
+    place();
+    return () => {
+      observer.disconnect();
+      hiddenChat?.removeAttribute(TITLE_HIDDEN_ATTRIBUTE);
+      container.remove();
+      setSlot(null);
+    };
+  }, [header]);
+  return slot;
+}
+
 function WorkspaceHeader(props: PluginThreadHeaderActionProps) {
   const anchor = useRef<HTMLSpanElement>(null);
   const slots = useHeaderSlots(anchor);
@@ -347,12 +418,17 @@ function WorkspaceTabRow({
   const [dragging, setDragging] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const showDraft = draftActive && draftOpen;
-  const draftPane = useDraftPane(slots?.paneAfter ?? null, showDraft);
+  const mainStrip = useMainStripSlot(slots?.header ?? null);
+  const draftPane = useDraftPane(mainStrip?.stripHost ?? slots?.paneAfter ?? null, showDraft);
   const environmentId = current?.environment?.id ?? null;
   const tabIds = tabs.map((thread) => thread.id);
   const openThreadTab = (id: string) => {
-    if (id === threadId) setDraftActive(false);
-    else navigate.toThread(id);
+    if (id !== threadId) {
+      navigate.toThread(id);
+      return;
+    }
+    setDraftActive(false);
+    if (mainStrip && !mainStrip.chatActive) mainStrip.chatButton.click();
   };
 
   useEffect(() => setDraftActive(false), [threadId]);
@@ -400,6 +476,14 @@ function WorkspaceTabRow({
         after ? tabOrderOf(after) : undefined,
       ),
     });
+  };
+
+  const openUrlInMainPane = (url: string) => {
+    const openUrl = navigate.openUrl as (
+      url: string,
+      options?: { experimental_placement?: "main" | "panel" },
+    ) => boolean;
+    openUrl(url, { experimental_placement: "main" });
   };
 
   const renameWorkspace = (next: string) => {
@@ -478,11 +562,26 @@ function WorkspaceTabRow({
     />
   );
   // One tab is just the workspace; the name already says which thread it is.
-  const showTabs = tabs.length > 1 || draftOpen;
+  // In BB's main-pane row the current thread's tab stands in for "Chat", so
+  // it always shows there.
+  const showTabs = mainStrip !== null || tabs.length > 1 || draftOpen;
+  const chatShowing = mainStrip?.chatActive ?? true;
 
-  const bar = (
-    <div className="bbw-bar">
-      {slots?.name ? createPortal(workspaceName, slots.name) : workspaceName}
+  const addButtonElement = (
+    <button
+      ref={addButton}
+      type="button"
+      className="bbw-add"
+      aria-label="Add to this workspace"
+      aria-haspopup="menu"
+      aria-expanded={menu !== "closed"}
+      onClick={() => setMenu(menu === "closed" ? "open" : "closed")}
+    >
+      <Icon name="Plus" className="bbw-icon" aria-hidden />
+    </button>
+  );
+
+  const strip = (
       <div
         className="bbw-strip"
         role="tablist"
@@ -495,7 +594,7 @@ function WorkspaceTabRow({
           <AgentTab
             key={thread.id}
             thread={thread}
-            active={!showDraft && thread.id === threadId}
+            active={!showDraft && chatShowing && thread.id === threadId}
             closable={tabs.length > 1}
             dropBefore={dragging !== null && dropIndex === index}
             dropAfter={dragging !== null && dropIndex === tabs.length && index === tabs.length - 1}
@@ -542,18 +641,14 @@ function WorkspaceTabRow({
             </button>
           </div>
         )}
-        <button
-          ref={addButton}
-          type="button"
-          className="bbw-add"
-          aria-label="Add to this workspace"
-          aria-haspopup="menu"
-          aria-expanded={menu !== "closed"}
-          onClick={() => setMenu(menu === "closed" ? "open" : "closed")}
-        >
-          <Icon name="Plus" className="bbw-icon" aria-hidden />
-        </button>
+        {mainStrip ? null : addButtonElement}
       </div>
+  );
+
+  const bar = (
+    <div className="bbw-bar">
+      {slots?.name ? createPortal(workspaceName, slots.name) : workspaceName}
+      {mainStrip ? <div className="bbw-header-actions">{addButtonElement}</div> : strip}
       {menu !== "closed" && (
         <AddMenu
           anchor={addButton.current}
@@ -565,7 +660,7 @@ function WorkspaceTabRow({
           onTerminal={(profile) => void openTerminal(profile)}
           onBrowser={(url) => {
             setMenu("closed");
-            navigate.openUrl(url);
+            openUrlInMainPane(url);
           }}
         />
       )}
@@ -585,7 +680,12 @@ function WorkspaceTabRow({
   );
 
   const target = slots?.bar ?? null;
-  return target ? createPortal(bar, target) : <div className="bbw-inline">{bar}</div>;
+  return (
+    <>
+      {target ? createPortal(bar, target) : <div className="bbw-inline">{bar}</div>}
+      {mainStrip && createPortal(strip, mainStrip.container)}
+    </>
+  );
 }
 
 function WorkspaceName({

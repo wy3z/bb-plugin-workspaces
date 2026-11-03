@@ -24,7 +24,6 @@ import {
   type PluginBrowserBbSdk,
   type PluginSidebarThread,
   type PluginThreadActionTarget,
-  type PluginThreadHeaderActionProps,
 } from "@get-bb/plugin-sdk/app";
 import {
   TAB_ORDER_KEY,
@@ -40,6 +39,10 @@ import {
   type WorkspaceThread,
 } from "./lib/workspaces.js";
 import { parseTerminalProfiles, type TerminalProfile } from "./lib/profiles.js";
+import {
+  registerThreadHeaderAction,
+  type ThreadHeaderActionProps,
+} from "./lib/header-slot.js";
 import "./app.css";
 
 const COMMAND_EVENT = "bb-workspaces:command";
@@ -174,6 +177,7 @@ function toActionTarget(thread: PluginSidebarThread): PluginThreadActionTarget {
     id: thread.id,
     projectId: thread.projectId,
     parentThreadId: thread.parentThreadId,
+    parentNotifications: thread.parentNotifications,
     archivedAt: thread.archivedAt,
     pinnedAt: thread.pinnedAt,
     sectionId: thread.sectionId,
@@ -388,7 +392,7 @@ function useMainStripSlot(header: HTMLElement | null) {
   return slot;
 }
 
-function WorkspaceHeader(props: PluginThreadHeaderActionProps) {
+function WorkspaceHeader(props: ThreadHeaderActionProps) {
   const anchor = useRef<HTMLSpanElement>(null);
   const slots = useHeaderSlots(anchor);
   return (
@@ -406,7 +410,7 @@ function WorkspaceTabRow({
   threadId,
   projectId,
   slots,
-}: PluginThreadHeaderActionProps & { slots: HeaderSlots | null }) {
+}: ThreadHeaderActionProps & { slots: HeaderSlots | null }) {
   const { workspaceId, tabs, current, name, isExplicit, draftOpen } = useWorkspace(threadId);
   const { values } = useSettings();
   const profiles = useMemo(() => parseTerminalProfiles(values?.terminalProfiles), [values]);
@@ -1014,7 +1018,7 @@ function command(
 }
 
 export default definePluginApp((app) => {
-  app.slots.experimental_threadHeaderAction({
+  registerThreadHeaderAction(app.slots, {
     id: "tabs",
     title: "Workspace tabs",
     component: WorkspaceHeader,

@@ -17,6 +17,7 @@
     "skipLibCheck": false
   },
   "include": [
+    "assets.d.ts",
     "server.ts",
     "app.tsx",
     "lib/**/*.ts"

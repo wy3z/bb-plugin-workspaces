@@ -28,7 +28,7 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
   padding: 0 2px;
   border-right: 0;
   color: inherit;
-  font-size: 14px;
+  font-size: var(--bbs-text-row, 13px);
 }
 
 .bbw-header-bar {
@@ -55,7 +55,7 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
 .bbw-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--bbs-gap, 8px);
   min-width: 0;
 }
 
@@ -63,7 +63,7 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
   display: inline-flex;
   flex: 0 1 auto;
   align-items: center;
-  gap: 6px;
+  gap: var(--bbs-gap-icon, 6px);
   min-width: 0;
   max-width: 220px;
   height: 28px;
@@ -72,15 +72,15 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
   border-right: 1px solid var(--border);
   border-radius: 0;
   background: transparent;
-  color: var(--foreground);
-  font-size: 13px;
+  color: var(--bbs-text-primary, var(--foreground));
+  font-size: var(--bbs-text-row, 13px);
   font-weight: 500;
   white-space: nowrap;
   cursor: default;
 }
 
 .bbw-name[data-unnamed="true"] {
-  color: var(--muted-foreground);
+  color: var(--bbs-text-tertiary, var(--muted-foreground));
   font-weight: 400;
 }
 
@@ -91,7 +91,7 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
   border: 1px solid var(--ring);
   border-radius: calc(var(--radius) - 4px);
   background: var(--background);
-  color: var(--foreground);
+  color: var(--bbs-text-primary, var(--foreground));
   font: inherit;
   outline: none;
 }
@@ -100,7 +100,7 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--bbs-gap-xs, 4px);
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
@@ -112,31 +112,31 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
 
 .bbw-icon {
   flex: none;
-  width: 14px;
-  height: 14px;
+  width: var(--bbs-icon, 14px);
+  height: var(--bbs-icon, 14px);
 }
 
 .bbw-tab {
   display: inline-flex;
   flex: 0 1 auto;
   align-items: center;
-  gap: 6px;
+  gap: var(--bbs-gap-icon, 6px);
   min-width: 0;
   max-width: 220px;
-  height: 28px;
+  height: var(--bbs-height, 28px);
   padding: 0 10px;
   border: 1px solid transparent;
   border-radius: calc(var(--radius) - 2px);
   background: transparent;
-  color: var(--muted-foreground);
-  font-size: 13px;
+  color: var(--bbs-text-tertiary, var(--muted-foreground));
+  font-size: var(--bbs-text-row, 13px);
   white-space: nowrap;
   cursor: pointer;
 }
 
 .bbw-tab:hover {
   background: var(--state-hover);
-  color: var(--foreground);
+  color: var(--bbs-text-primary, var(--foreground));
 }
 
 .bbw-tab[data-drop-before] {
@@ -150,7 +150,7 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
 .bbw-tab[data-active="true"] {
   border-color: var(--border);
   background: var(--state-active);
-  color: var(--foreground);
+  color: var(--bbs-text-primary, var(--foreground));
 }
 
 .bbw-title {
@@ -169,14 +169,14 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
   border: 0;
   border-radius: calc(var(--radius) - 2px);
   background: transparent;
-  color: var(--muted-foreground);
+  color: var(--bbs-text-tertiary, var(--muted-foreground));
   cursor: pointer;
 }
 
 .bbw-add:hover,
 .bbw-add[aria-expanded="true"] {
   background: var(--state-hover);
-  color: var(--foreground);
+  color: var(--bbs-text-primary, var(--foreground));
 }
 
 .bbw-menu {
@@ -191,14 +191,14 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
   background: var(--popover);
   color: var(--popover-foreground);
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.3);
-  font-size: 13px;
+  font-size: var(--bbs-text-row, 13px);
 }
 
 .bbw-item,
 .bbw-url {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--bbs-gap, 8px);
   height: 30px;
   padding: 0 8px;
   border: 0;
@@ -226,9 +226,9 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
 }
 
 .bbw-hint {
-  color: var(--muted-foreground);
+  color: var(--bbs-text-tertiary, var(--muted-foreground));
   font-family: inherit;
-  font-size: 11px;
+  font-size: var(--bbs-text-meta, 11px);
 }
 
 .bbw-url input {
@@ -239,7 +239,7 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) - 4px);
   background: var(--background);
-  color: var(--foreground);
+  color: var(--bbs-text-primary, var(--foreground));
   font: inherit;
   outline: none;
 }
@@ -257,8 +257,8 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
 .bbw-group,
 .bbw-foot {
   padding: 4px 8px;
-  color: var(--muted-foreground);
-  font-size: 11px;
+  color: var(--bbs-text-tertiary, var(--muted-foreground));
+  font-size: var(--bbs-text-meta, 11px);
 }
 
 /* A "New agent" tab: hide the thread's chat (still mounted) and show ours. */
@@ -299,20 +299,20 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
 .bbw-draft-inner {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--bbs-gap, 8px);
   width: min(760px, 100%);
 }
 
 .bbw-draft-title {
-  color: var(--foreground);
-  font-size: 18px;
+  color: var(--bbs-text-primary, var(--foreground));
+  font-size: var(--bbs-text-display, 17px);
   font-weight: 500;
 }
 
 .bbw-draft-note {
   margin-bottom: 8px;
-  color: var(--muted-foreground);
-  font-size: 13px;
+  color: var(--bbs-text-tertiary, var(--muted-foreground));
+  font-size: var(--bbs-text-row, 13px);
 }
 
 .bbw-tab-close {
@@ -324,9 +324,9 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
   margin-right: -4px;
   padding: 0;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--bbs-radius-xs, 4px);
   background: transparent;
-  color: var(--muted-foreground);
+  color: var(--bbs-text-tertiary, var(--muted-foreground));
   cursor: pointer;
 }
 
@@ -335,17 +335,17 @@ header [data-thread-header-pane-actions] button:has([data-icon="CloseThreadPane"
 }
 
 .bbw-tab-close .bbw-icon {
-  width: 12px;
-  height: 12px;
+  width: var(--bbs-icon-inline, 12px);
+  height: var(--bbs-icon-inline, 12px);
 }
 
 .bbw-tab-close:hover {
   background: var(--state-hover);
-  color: var(--foreground);
+  color: var(--bbs-text-primary, var(--foreground));
 }
 
 .bbw-error {
   margin: 0;
   color: var(--destructive, #f85149);
-  font-size: 12px;
+  font-size: var(--bbs-text-body, 12px);
 }

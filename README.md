@@ -64,9 +64,9 @@ On stock BB, or before any tab has moved, the tabs stay in the header.
 ## Limits
 
 - BB has no supported slot for component tabs in the thread header. The tab row
-  uses BB's retired `experimental_threadHeaderAction` slot, which 0.48.x still
+  uses BB's retired `experimental_threadHeaderAction` slot, which 0.49.x still
   collects and renders but current SDK typings no longer declare. The plugin
-  therefore supports `bb >=0.48.1 <0.49` and fails loudly rather than drawing no
+  therefore supports `bb >=0.49 <0.50` and fails loudly rather than drawing no
   tabs if the slot goes away. Moving to a supported surface means rebuilding the
   tabs as header thread actions, which are buttons.
 - If a BB update changes the header layout, the tabs fall back to a row of their
